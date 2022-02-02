@@ -17,13 +17,19 @@ import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 import androidx.core.app.NotificationCompat;
 
+import java.text.ParseException;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.Timer;
 import java.util.TimerTask;
 
 public class ScreenOnOffManager extends Service {
-    public int counter = 0;
     private boolean previousState = false;
+    private Date stateChanged = null;
+    private boolean sendNoti = false;
+    public static boolean isCall = false;
+//    private long maxTime = (long) 1.8e+6;
+    private long maxTime = 5000;
 
     @Override
     public void onCreate() {
@@ -56,27 +62,53 @@ public class ScreenOnOffManager extends Service {
 
 
 
-    private String timeCalculater(){
+    private String timeManager() throws ParseException {
         String notification = "";
         java.text.DateFormat df = new java.text.SimpleDateFormat("hh:mm:ss");
         int hou = Calendar.getInstance().getTime().getHours();
         int min = Calendar.getInstance().getTime().getMinutes();
         int sec = Calendar.getInstance().getTime().getSeconds();
         String source = hou + ":" + min + ":" + sec;
-        if(screenState() != previousState){
+        Date currentTime = df.parse(source);
+        if(screenState() != previousState){ // Add test Call receiver
             previousState = screenState();
+            stateChanged = df.parse(source);
+            if(sendNoti == true){
+                sendNoti = false;
+                stateChanged = currentTime;
+                // send notification;
+                System.out.println("Notification");
+            }
         }
+        else{
+            long timedifference = currentTime.getTime()-stateChanged.getTime();
+            if(timedifference >= maxTime && !isCall){
+                if(screenState() == true){
+                    // send notification
+                    stateChanged = currentTime;
+                    System.out.println("Notification");
+                }
+                else {
+                    sendNoti = true;
+                }
+            }
 
+        }
         return notification;
     }
 
     private Timer timer;
     private TimerTask timerTask;
+
     public void startTimer() {
         timer = new Timer();
         timerTask = new TimerTask() {
             public void run() {
-                Log.i("Count", "=========  helloo "+ (counter++));
+                try {
+                    timeManager();
+                } catch (ParseException e) {
+                    e.printStackTrace();
+                }
             }
         };
         timer.schedule(timerTask, 1000, 1000); //
@@ -101,8 +133,7 @@ public class ScreenOnOffManager extends Service {
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
-    private void startMyOwnForeground()
-    {
+    private void startMyOwnForeground() {
         String NOTIFICATION_CHANNEL_ID = "example.remainderApp";
         String channelName = "Background Service";
         NotificationChannel chan = new NotificationChannel(NOTIFICATION_CHANNEL_ID, channelName, NotificationManager.IMPORTANCE_NONE);

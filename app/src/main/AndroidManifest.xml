@@ -6,6 +6,7 @@
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
     <uses-permission android:name="android.permission.READ_PHONE_STATE"/>
+    <uses-permission android:name="android.permission.CALL_PHONE"/>
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
 
     <application
@@ -25,9 +26,14 @@
             </intent-filter>
         </activity>
 
-        <service android:enabled="true" android:name=".ScreenOnOffManager">
+        <service android:enabled="true" android:name=".ScreenOnOffManager"/>
 
-        </service>
+        <receiver android:name=".callBroadcast"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="android.intent.action.PHONE_STATE"/>
+            </intent-filter>
+        </receiver>
     </application>
 
 </manifest>
