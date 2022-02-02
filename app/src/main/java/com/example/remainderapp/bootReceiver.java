@@ -19,6 +19,7 @@ public class bootReceiver extends BroadcastReceiver{
     public void onReceive(Context context, Intent intent) {
         if(Intent.ACTION_BOOT_COMPLETED.equals(intent.getAction())){
             System.out.println("booted");
+            JobService.enqueueWork(context, new Intent());
 //            context.startService(new Intent(context, ScreenOnOffManager.class).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
         }
     }
