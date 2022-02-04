@@ -48,22 +48,7 @@ public class MainActivity extends AppCompatActivity {
                     new String[]{Manifest.permission.RECEIVE_BOOT_COMPLETED}, 1);
         }
     }
-
-    private void scheduleJob(){
-        ComponentName componentName = new ComponentName(this, JobService.class);
-        JobInfo jobInfo = new JobInfo.Builder(123, componentName)
-                .setPersisted(true)
-                .setPeriodic(15 * 60 * 1000)
-                .build();
-        JobScheduler scheduler = (JobScheduler) getSystemService(JOB_SCHEDULER_SERVICE);
-        int resultCode = scheduler.schedule(jobInfo);
-        if(resultCode == JobScheduler.RESULT_SUCCESS){
-            Log.i("sdlfj", "scheduleJob: Job schedule");
-        }
-        else {
-            Log.i("sdlfj", "scheduleJob: Job schedule failed");
-        }
-    }
+    
 
     public static boolean isMyServiceRunning(Class<?> serviceClass) {
         System.out.println(serviceClass.getName());
