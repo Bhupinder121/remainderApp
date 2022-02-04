@@ -48,7 +48,7 @@ public class MainActivity extends AppCompatActivity {
                     new String[]{Manifest.permission.RECEIVE_BOOT_COMPLETED}, 1);
         }
     }
-    
+
 
     public static boolean isMyServiceRunning(Class<?> serviceClass) {
         System.out.println(serviceClass.getName());

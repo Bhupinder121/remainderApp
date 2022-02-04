@@ -30,7 +30,7 @@ public class ScreenOnOffManager extends Service {
     private boolean sendNoti = false;
     public static boolean isCall = false;
     final boolean[] toggle = {true};
-    boolean oneTime = true;
+    boolean oneTime = false;
 //    private long maxTime = (long) 1.8e+6;
     private long maxTime = 5000;
     private long waitTime = 30000;
