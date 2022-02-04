@@ -7,6 +7,9 @@ import androidx.core.content.ContextCompat;
 
 import android.Manifest;
 import android.app.ActivityManager;
+import android.app.job.JobInfo;
+import android.app.job.JobScheduler;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -43,6 +46,22 @@ public class MainActivity extends AppCompatActivity {
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.RECEIVE_BOOT_COMPLETED) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this,
                     new String[]{Manifest.permission.RECEIVE_BOOT_COMPLETED}, 1);
+        }
+    }
+
+    private void scheduleJob(){
+        ComponentName componentName = new ComponentName(this, JobService.class);
+        JobInfo jobInfo = new JobInfo.Builder(123, componentName)
+                .setPersisted(true)
+                .setPeriodic(15 * 60 * 1000)
+                .build();
+        JobScheduler scheduler = (JobScheduler) getSystemService(JOB_SCHEDULER_SERVICE);
+        int resultCode = scheduler.schedule(jobInfo);
+        if(resultCode == JobScheduler.RESULT_SUCCESS){
+            Log.i("sdlfj", "scheduleJob: Job schedule");
+        }
+        else {
+            Log.i("sdlfj", "scheduleJob: Job schedule failed");
         }
     }
 

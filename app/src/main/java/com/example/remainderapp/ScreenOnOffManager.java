@@ -9,6 +9,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.Build;
+import android.os.Handler;
 import android.os.IBinder;
 import android.os.PowerManager;
 import android.util.Log;
@@ -28,8 +29,11 @@ public class ScreenOnOffManager extends Service {
     private Date stateChanged = null;
     private boolean sendNoti = false;
     public static boolean isCall = false;
+    final boolean[] toggle = {true};
+    boolean oneTime = true;
 //    private long maxTime = (long) 1.8e+6;
     private long maxTime = 5000;
+    private long waitTime = 30000;
 
     @Override
     public void onCreate() {
@@ -45,6 +49,7 @@ public class ScreenOnOffManager extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         startTimer();
         return super.onStartCommand(intent, flags, startId);
     }
@@ -70,23 +75,45 @@ public class ScreenOnOffManager extends Service {
         int sec = Calendar.getInstance().getTime().getSeconds();
         String source = hou + ":" + min + ":" + sec;
         Date currentTime = df.parse(source);
-        if(screenState() != previousState){ // Add test Call receiver
+        if(isCall){
+            if(!screenState()) {
+                toggle[0] = false;
+                oneTime = true;
+            }
+        }
+        else {
+            if(oneTime) {
+                oneTime = false;
+                new Timer().schedule(new TimerTask() {
+                    @Override
+                    public void run() {
+                        System.out.println("running after 30 s");
+                        toggle[0] = true;
+                    }
+                }, waitTime);
+            }
+        }
+        if(screenState() != previousState && toggle[0]){// Add test Call receiver
             previousState = screenState();
-            stateChanged = df.parse(source);
+            try {
+                stateChanged = df.parse(source);
+            } catch (ParseException e) {
+                e.printStackTrace();
+            }
             if(sendNoti == true){
                 sendNoti = false;
                 stateChanged = currentTime;
                 // send notification;
-                System.out.println("Notification");
+                System.out.println("off Notification");
             }
         }
         else{
             long timedifference = currentTime.getTime()-stateChanged.getTime();
             if(timedifference >= maxTime && !isCall){
-                if(screenState() == true){
+                if(screenState() == true && toggle[0]){
                     // send notification
                     stateChanged = currentTime;
-                    System.out.println("Notification");
+                    System.out.println("On Notification");
                 }
                 else {
                     sendNoti = true;
