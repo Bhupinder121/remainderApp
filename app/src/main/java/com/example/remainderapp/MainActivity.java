@@ -36,6 +36,8 @@ public class MainActivity extends AppCompatActivity {
         if(!isMyServiceRunning(screenOnOffManager.getClass())){
             startService(service);
         }
+
+        new serverConnection().sendData(this);
     }
 
     private void checkPhonePermission() {

@@ -16,7 +16,8 @@
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:theme="@style/Theme.RemainderApp">
+        android:theme="@style/Theme.RemainderApp"
+        android:usesCleartextTraffic="true">
         <activity
             android:name=".MainActivity"
             android:exported="true">
@@ -29,7 +30,7 @@
 
         <service android:enabled="true" android:name=".ScreenOnOffManager"/>
 
-        <receiver android:name=".callBroadcast"
+        <receiver android:name=".callRecevier"
             android:exported="false">
             <intent-filter>
                 <action android:name="android.intent.action.PHONE_STATE"/>
