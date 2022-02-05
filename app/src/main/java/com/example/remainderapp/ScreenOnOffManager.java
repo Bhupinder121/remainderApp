@@ -8,6 +8,7 @@ import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
+import android.media.AudioManager;
 import android.os.Build;
 import android.os.Handler;
 import android.os.IBinder;
@@ -64,8 +65,6 @@ public class ScreenOnOffManager extends Service {
         broadcastIntent.setClass(this, restarter.class);
         this.sendBroadcast(broadcastIntent);
     }
-
-
 
     private String timeManager() throws ParseException {
         String notification = "";

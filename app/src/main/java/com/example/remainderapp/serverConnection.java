@@ -1,30 +1,41 @@
 package com.example.remainderapp;
 
 import android.content.Context;
-import android.os.Bundle;
 import android.util.Log;
 
-import com.android.volley.AuthFailureError;
-import com.android.volley.NetworkResponse;
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
-import com.android.volley.VolleyLog;
-import com.android.volley.toolbox.HttpHeaderParser;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.UnsupportedEncodingException;
+import java.util.TimerTask;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Retrofit;
+import retrofit2.converter.gson.GsonConverterFactory;
 
 public class serverConnection {
+    RetrofitInterface retrofitInterface;
+    Retrofit retrofit;
     String baseUrl = "http://192.168.0.118:3000";
 
-
+    public void setup(){
+        Gson gson = new GsonBuilder().setLenient().create();
+        retrofit = new Retrofit.Builder()
+                .baseUrl(baseUrl)
+                .addConverterFactory(GsonConverterFactory.create(gson))
+                .build();
+        retrofitInterface = retrofit.create(RetrofitInterface.class);
+    }
 
     public void getData(String date_category, Context context, com.example.remainderapp.customCallback callback){
         date_category = Encryption_Decryption.encrypt(date_category).replace("+", "t36i")
@@ -55,56 +66,25 @@ public class serverConnection {
         queue.add(stringRequest);
     }
 
-    public void sendData(Context context){
+    public void sendData(JSONObject data, customCallback callback) {
+        JSONObject encryptedData = new JSONObject();
         try {
-            RequestQueue requestQueue = Volley.newRequestQueue(context);
-            String postURL = baseUrl+"/getData";
-            JSONObject jsonBody = new JSONObject();
-            jsonBody.put("Title", "Android Volley Demo");
-            jsonBody.put("Author", "BNK");
-            final String requestBody = jsonBody.toString();
-
-            StringRequest stringRequest = new StringRequest(Request.Method.POST, postURL, new Response.Listener<String>() {
-                @Override
-                public void onResponse(String response) {
-                    Log.i("VOLLEY", response);
-                }
-            }, new Response.ErrorListener() {
-                @Override
-                public void onErrorResponse(VolleyError error) {
-                    Log.e("VOLLEY", error.toString());
-                }
-            }) {
-                @Override
-                public String getBodyContentType() {
-                    return "application/json; charset=utf-8";
-                }
-
-                @Override
-                public byte[] getBody() throws AuthFailureError {
-                    try {
-                        return requestBody == null ? null : requestBody.getBytes("utf-8");
-                    } catch (UnsupportedEncodingException uee) {
-                        VolleyLog.wtf("Unsupported Encoding while trying to get the bytes of %s using %s", requestBody, "utf-8");
-                        return null;
-                    }
-                }
-
-                @Override
-                protected Response<String> parseNetworkResponse(NetworkResponse response) {
-                    String responseString = "";
-                    if (response != null) {
-                        responseString = String.valueOf(response.statusCode);
-                        // can get more details such as response.headers
-                    }
-                    return Response.success(responseString, HttpHeaderParser.parseCacheHeaders(response));
-                }
-            };
-
-            requestQueue.add(stringRequest);
+            encryptedData.put("json", Encryption_Decryption.encrypt(data.toString()));
         } catch (JSONException e) {
             e.printStackTrace();
         }
+        Call<JSONObject> call = retrofitInterface.sendData(encryptedData);
+        call.enqueue(new Callback<JSONObject>() {
+            @Override
+            public void onResponse(Call<JSONObject> call, retrofit2.Response<JSONObject> response) {
+
+            }
+
+            @Override
+            public void onFailure(Call<JSONObject> call, Throwable t) {
+
+            }
+        });
     }
 
 }

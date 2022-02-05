@@ -18,10 +18,15 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 public class MainActivity extends AppCompatActivity {
     ScreenOnOffManager screenOnOffManager;
     Intent service;
     static ActivityManager manager;
+    serverConnection connection;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -32,12 +37,12 @@ public class MainActivity extends AppCompatActivity {
         manager = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
         screenOnOffManager = new ScreenOnOffManager();
         service = new Intent(this, ScreenOnOffManager.class);
+        connection = new serverConnection();
+        connection.setup();
 
         if(!isMyServiceRunning(screenOnOffManager.getClass())){
             startService(service);
         }
-
-        new serverConnection().sendData(this);
     }
 
     private void checkPhonePermission() {
