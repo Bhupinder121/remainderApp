@@ -1,8 +1,10 @@
 package com.example.remainderapp;
 
-import org.json.JSONArray;
+import org.json.JSONObject;
+
+import java.util.ArrayList;
 
 public interface customCallback {
     void StringData(String value);
-    void JsonData(JSONArray jsonObjects);
+    void JsonData(ArrayList<JSONObject> jsonObjects);
 }

@@ -16,6 +16,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.ArrayList;
 import java.util.TimerTask;
 
 import retrofit2.Call;
@@ -27,6 +28,7 @@ public class serverConnection {
     RetrofitInterface retrofitInterface;
     Retrofit retrofit;
     String baseUrl = "http://192.168.0.118:3000";
+    
 
     public void setup(){
         Gson gson = new GsonBuilder().setLenient().create();
@@ -38,23 +40,31 @@ public class serverConnection {
     }
 
     public void getData(String date_category, Context context, com.example.remainderapp.customCallback callback){
-        date_category = Encryption_Decryption.encrypt(date_category).replace("+", "t36i")
-                .replace("/", "8h3nk1").replace("=", "d3ink2"); // Add encryption
+//        date_category = Encryption_Decryption.encrypt(date_category).replace("+", "t36i")
+//                .replace("/", "8h3nk1").replace("=", "d3ink2"); // Add encryption
         RequestQueue queue = Volley.newRequestQueue(context);
         String url = baseUrl+"/sendData?data_query="+date_category;
         StringRequest stringRequest = new StringRequest(Request.Method.GET, url,
                 new com.android.volley.Response.Listener<String>() {
                     @Override
                     public void onResponse(String response) {
+                        String encrypedData = response.replace("t36i", "+").replace("8h3nk1", "/").replace("d3ink2", "=");
+//                        String decryptionData = Encryption_Decryption.decrypt(encrypedData);
+                        ArrayList<JSONObject> objects = new ArrayList<>();
+                        int todayTasks = 0;
                         try {
-                            String encrypedData = response.replace("t36i", "+").replace("8h3nk1", "/").replace("d3ink2", "=");
-                            String decryptionData = Encryption_Decryption.decrypt(encrypedData);
-                            callback.StringData(decryptionData);
-                            JSONArray jsonArray = new JSONArray(decryptionData);
-                            callback.JsonData(jsonArray);
+                            JSONArray jsonArray = new JSONArray(response);
+                            for (int i = 0; i < jsonArray.length(); i++) {
+                                if(jsonArray.getJSONObject(i).getInt("isNotDone") == 0){
+                                    todayTasks++;
+                                }
+                                objects.add(jsonArray.getJSONObject(i));
+                            }
                         } catch (JSONException e) {
                             e.printStackTrace();
                         }
+                        callback.JsonData(objects);
+                        callback.StringData(String.valueOf(todayTasks));
                     }
                 }, new com.android.volley.Response.ErrorListener() {
 

@@ -1,38 +1,41 @@
 package com.example.remainderapp;
 
-import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
 import android.Manifest;
 import android.app.ActivityManager;
-import android.app.job.JobInfo;
-import android.app.job.JobScheduler;
-import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.os.Build;
 import android.os.Bundle;
-import android.os.Handler;
 import android.util.Log;
+import android.widget.ListAdapter;
+import android.widget.ListView;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity {
     ScreenOnOffManager screenOnOffManager;
     Intent service;
     static ActivityManager manager;
     serverConnection connection;
+    ListAdapter adapter;
+    ListView listView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         checkPhonePermission();
+
+        listView = findViewById(R.id.list);
+        listView.setVerticalScrollBarEnabled(false);
 
         manager = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
         screenOnOffManager = new ScreenOnOffManager();
@@ -43,6 +46,34 @@ public class MainActivity extends AppCompatActivity {
         if(!isMyServiceRunning(screenOnOffManager.getClass())){
             startService(service);
         }
+
+        getData(new customCallback() {
+            @Override
+            public void StringData(String value) {
+                System.out.println(value);
+            }
+
+            @Override
+            public void JsonData(ArrayList<JSONObject> jsonObjects) {
+                adapter = new customAdapter(MainActivity.this, R.layout.remaider_task, jsonObjects);
+                listView.setAdapter(adapter);
+            }
+        });
+    }
+
+
+    private void getData(customCallback callback){
+        connection.getData("SELECT * From task_table", MainActivity.this, new customCallback() {
+            @Override
+            public void StringData(String value) {
+                System.out.println(value);
+            }
+
+            @Override
+            public void JsonData(ArrayList<JSONObject> jsonObjects) {
+                callback.JsonData(jsonObjects);
+            }
+        });
     }
 
     private void checkPhonePermission() {
@@ -58,7 +89,6 @@ public class MainActivity extends AppCompatActivity {
 
 
     public static boolean isMyServiceRunning(Class<?> serviceClass) {
-        System.out.println(serviceClass.getName());
         for (ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
             if (serviceClass.getName().equals(service.service.getClassName())) {
                 Log.i ("Service status", "Running");

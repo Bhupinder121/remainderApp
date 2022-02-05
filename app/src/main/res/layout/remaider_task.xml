@@ -8,7 +8,7 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Loser Not Done Work"
+        android:text="Not Done Work"
         android:textSize="18sp"
         android:textStyle="bold"
         android:id="@+id/ND"
