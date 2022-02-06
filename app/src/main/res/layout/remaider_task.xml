@@ -11,10 +11,20 @@
         android:text="Not Done Work"
         android:textSize="18sp"
         android:textStyle="bold"
-        android:id="@+id/ND"
+        android:id="@+id/NDT"
         android:visibility="gone"
         />
 
+
+    <TextView
+        android:id="@+id/ND"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentEnd="true"
+        android:layout_marginEnd="70dp"
+        android:text="Not Complete by"
+        android:textStyle="bold"
+        android:visibility="gone" />
 
     <LinearLayout
 

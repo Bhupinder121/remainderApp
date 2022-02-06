@@ -40,43 +40,29 @@ public class serverConnection {
     }
 
     public void getData(String date_category, Context context, com.example.remainderapp.customCallback callback){
-//        date_category = Encryption_Decryption.encrypt(date_category).replace("+", "t36i")
-//                .replace("/", "8h3nk1").replace("=", "d3ink2"); // Add encryption
+        date_category = Encryption_Decryption.encrypt(date_category).replace("+", "t36i")
+                .replace("/", "8h3nk1").replace("=", "d3ink2"); // Add encryption
         RequestQueue queue = Volley.newRequestQueue(context);
         String url = baseUrl+"/sendData?data_query="+date_category;
         StringRequest stringRequest = new StringRequest(Request.Method.GET, url,
-                new com.android.volley.Response.Listener<String>() {
-                    @Override
-                    public void onResponse(String response) {
-                        String encrypedData = response.replace("t36i", "+").replace("8h3nk1", "/").replace("d3ink2", "=");
-//                        String decryptionData = Encryption_Decryption.decrypt(encrypedData);
-                        ArrayList<JSONObject> objects = new ArrayList<>();
-                        int todayTasks = 0;
-                        try {
-                            JSONArray jsonArray = new JSONArray(response);
-                            for (int i = 0; i < jsonArray.length(); i++) {
-                                if(jsonArray.getJSONObject(i).getInt("isNotDone") == 0){
-                                    todayTasks++;
-                                }
-                                objects.add(jsonArray.getJSONObject(i));
-                            }
-                        } catch (JSONException e) {
-                            e.printStackTrace();
+                response -> {
+                    String encrypedData = response.replace("t36i", "+").replace("8h3nk1", "/").replace("d3ink2", "=");
+                    String decryptionData = Encryption_Decryption.decrypt(encrypedData);
+                    ArrayList<JSONObject> objects = new ArrayList<>();
+                    try {
+                        JSONArray jsonArray = new JSONArray(decryptionData);
+                        for (int i = 0; i < jsonArray.length(); i++) {
+                            objects.add(jsonArray.getJSONObject(i));
                         }
-                        callback.JsonData(objects);
-                        callback.StringData(String.valueOf(todayTasks));
+                    } catch (JSONException e) {
+                        e.printStackTrace();
                     }
-                }, new com.android.volley.Response.ErrorListener() {
-
-            @Override
-            public void onErrorResponse(VolleyError error) {
-                System.out.println("onErrorResponse: "+error);
-            }
-        });
+                    callback.Data(objects, objects.size());
+                }, error -> System.out.println("onErrorResponse: "+error));
         queue.add(stringRequest);
     }
 
-    public void sendData(JSONObject data, customCallback callback) {
+    public void sendData(JSONObject data) {
         JSONObject encryptedData = new JSONObject();
         try {
             encryptedData.put("json", Encryption_Decryption.encrypt(data.toString()));
