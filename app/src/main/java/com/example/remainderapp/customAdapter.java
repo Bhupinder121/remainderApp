@@ -41,6 +41,7 @@ public class customAdapter extends ArrayAdapter<JSONObject> {
         convertView = LayoutInflater.from(getContext()).inflate(R.layout.remaider_task, parent, false);
 
         String task_date = "today";
+        String taskName = "";
         SimpleDateFormat format = new SimpleDateFormat("dd/MM/yyyy, HH:mm:ss a");
 
         TextView task = convertView.findViewById(R.id.task);
@@ -67,8 +68,9 @@ public class customAdapter extends ArrayAdapter<JSONObject> {
                 task_date = taskDate.getDate() + " " + monthName[taskDate.getMonth()];
             }
 
+            taskName = tasks.get(position).getString("taskName");
             date.setText(task_date);
-            task.setText(tasks.get(position).getString("taskName"));
+            task.setText(taskName);
             if(tasks.get(position).getInt("isDone") == 1){
                 task.setPaintFlags(task.getPaintFlags() | Paint.STRIKE_THRU_TEXT_FLAG);
                 doneButton.setEnabled(false);
@@ -93,6 +95,16 @@ public class customAdapter extends ArrayAdapter<JSONObject> {
                 doneButton.setEnabled(false);
             }
         });
+
+        if(taskName.equals("add book")){
+            doneButton.setText("Add");
+            doneButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    MainActivity.add_book_dialog();
+                }
+            });
+        }
 
         try {
             if(tasks.get(position).getInt("isNotDone") == 0) {

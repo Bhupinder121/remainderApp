@@ -1,9 +1,11 @@
 package com.example.remainderapp;
 
 
+import android.annotation.SuppressLint;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
@@ -13,32 +15,49 @@ import android.os.Build;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.PowerManager;
+import android.telecom.Call;
 import android.util.Log;
+import android.widget.RemoteViews;
 
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 import androidx.core.app.NotificationCompat;
+import androidx.core.app.NotificationManagerCompat;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.text.ParseException;
+import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.Date;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
 
 public class ScreenOnOffManager extends Service {
     private boolean previousState = false;
     private Date stateChanged = null;
-    private boolean sendNoti = false;
+    private boolean sendNoti = false, wakeup = false;
     public static boolean isCall = false;
     final boolean[] toggle = {true};
     boolean oneTime = false;
-//    private long maxTime = (long) 1.8e+6;
-    private long maxTime = 5000;
+    private long maxTime = (long) 1.8e+6;
+    private long sleepTime = (long) 30000;
     private long waitTime = 30000;
+//    private long sleepTime = (long) 2.16e+7;
+    private static serverConnection connection;
 
     @Override
     public void onCreate() {
         super.onCreate();
+        createNotificationChannel();
+        connection = new serverConnection();
+        connection.setup();
+
         if (Build.VERSION.SDK_INT > Build.VERSION_CODES.O){
             startMyOwnForeground();
         }
@@ -102,28 +121,149 @@ public class ScreenOnOffManager extends Service {
             } catch (ParseException e) {
                 e.printStackTrace();
             }
-            if(sendNoti == true){
+            if(wakeup){
+                sendNoti = false;
+                wakeUp();
+                showQuote();
+            }
+            else if(sendNoti){
                 sendNoti = false;
                 stateChanged = currentTime;
+                showData();
                 // send notification;
                 System.out.println("off Notification");
             }
         }
         else{
             long timedifference = currentTime.getTime()-stateChanged.getTime();
-            if(timedifference >= maxTime && !isCall){
-                if(screenState() == true && toggle[0]){
-                    // send notification
-                    stateChanged = currentTime;
-                    System.out.println("On Notification");
+            if(!isCall){
+                if(timedifference >= sleepTime){
+                    if(!screenState()){
+                        wakeup = true;
+                    }
                 }
-                else {
-                    sendNoti = true;
+                else if(timedifference >= maxTime){
+                    if(screenState() && toggle[0]){
+                        showData();
+                        // send notification
+                        stateChanged = currentTime;
+                        System.out.println("On Notification");
+                    }
+                    else {
+                        sendNoti = true;
+                    }
                 }
             }
-
         }
         return notification;
+    }
+
+    private void showQuote(){
+        connection.getData("SELECT * FROM quotes_table ORDER BY RAND() LIMIT 1", getApplicationContext(), new customCallback() {
+            @Override
+            public void Data(ArrayList<JSONObject> value, int arraySize) throws JSONException {
+                String quote = value.get(0).getString("quoteName");
+                sendNotification(getApplicationContext(),"Quote of the day",quote) ;
+            }
+        });
+    }
+
+    private void showData(){
+        getData(getApplicationContext(), (value, arraySize) -> {
+            List<String> tasks = new ArrayList<>();
+            int count = 0;
+            for (JSONObject obj : value) {
+                count++;
+                tasks.add(obj.getString("taskName"));
+            }
+            if (count > 0){
+                String taskNames = countFrequencies(tasks);
+                showTasKs(taskNames, count);
+            }
+        });
+    }
+
+    private void showTasKs(String task, int count) {
+        RemoteViews collaspedView = new RemoteViews(getPackageName(), R.layout.collasped_notification);
+        RemoteViews expanedView = new RemoteViews(getPackageName(), R.layout.list_notification);
+        String remainingTask = count + " Task Remaining";
+
+        expanedView.setTextViewText(R.id.editTask, task);
+        collaspedView.setTextViewText(R.id.remainingTask, remainingTask);
+
+        Intent resIntent = new Intent(this, MainActivity.class);
+        PendingIntent PenIntent = PendingIntent.getActivity(this, 1, resIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+        Notification notification = new NotificationCompat.Builder(this, "WakeUP")
+//                .setContentTitle(title)
+//                .setContentText(task)
+                .setSmallIcon(R.mipmap.ic_launcher)
+                .setAutoCancel(true)
+                .setPriority(NotificationCompat.PRIORITY_MAX)
+                .setDefaults(Notification.DEFAULT_ALL)
+                .setCustomContentView(collaspedView)
+                .setCustomBigContentView(expanedView)
+                .setStyle(new NotificationCompat.BigTextStyle())
+                .setStyle(new NotificationCompat.DecoratedCustomViewStyle())
+                .setContentIntent(PenIntent)
+                .build();
+
+        NotificationManagerCompat managerCompat = NotificationManagerCompat.from(this);
+        managerCompat.notify(1, notification);
+    }
+
+    public static String countFrequencies(List<String> list) {
+        StringBuilder tasks = new StringBuilder();
+        tasks.append("").append("\n");
+        Set<String> st = new HashSet<>(list);
+        for (String s : st) {
+            tasks.append(Collections.frequency(list, s)).append(" ").append(s).append("\n");
+        }
+        return tasks.toString();
+    }
+
+    private void createNotificationChannel() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            @SuppressLint("WrongConstant") NotificationChannel channel = new NotificationChannel("WakeUP", "WakeUP", NotificationManager.IMPORTANCE_MAX);
+            NotificationManager manager = getSystemService(NotificationManager.class);
+            manager.createNotificationChannel(channel);
+        }
+    }
+
+    private void getData(Context context, customCallback callback){
+        connection.getData("SELECT * From task_table", context, (todayvalue, todaySize) -> connection.getData("SELECT * FROM notdonetask_table", context, (notDonevalue, notDoneSize) -> {
+            todayvalue.addAll(notDonevalue);
+            callback.Data(todayvalue, todaySize);
+        }));
+    }
+
+    private void wakeUp() {
+        Intent resIntent = new Intent(this, MainActivity.class);
+        PendingIntent PenIntent = PendingIntent.getActivity(this, 1, resIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+        Notification notification = new NotificationCompat.Builder(this, "WakeUP")
+                .setContentTitle("WAKE UP")
+                .setContentText("The task is Make Bed")
+                .setSmallIcon(R.mipmap.ic_launcher)
+                .setAutoCancel(true)
+                .setPriority(NotificationCompat.PRIORITY_MAX)
+                .setDefaults(Notification.DEFAULT_ALL)
+                .setContentIntent(PenIntent)
+                .build();
+        NotificationManagerCompat managerCompat = NotificationManagerCompat.from(this);
+        managerCompat.notify(2, notification);
+    }
+
+    public static void sendNotification(Context context, String title,String Info) {
+        Notification notification = new NotificationCompat.Builder(context, "WakeUP")
+                .setContentTitle(title)
+                .setContentText(Info)
+                .setSmallIcon(R.mipmap.ic_launcher)
+                .setAutoCancel(true)
+                .setPriority(NotificationCompat.PRIORITY_MAX)
+                .setStyle(new NotificationCompat.BigTextStyle())
+                .setDefaults(Notification.DEFAULT_ALL)
+                .build();
+        NotificationManagerCompat managerCompat = NotificationManagerCompat.from(context);
+        managerCompat.notify(3, notification);
     }
 
     private Timer timer;

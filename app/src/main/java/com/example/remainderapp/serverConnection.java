@@ -57,7 +57,11 @@ public class serverConnection {
                     } catch (JSONException e) {
                         e.printStackTrace();
                     }
-                    callback.Data(objects, objects.size());
+                    try {
+                        callback.Data(objects, objects.size());
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
                 }, error -> System.out.println("onErrorResponse: "+error));
         queue.add(stringRequest);
     }

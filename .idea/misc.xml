@@ -3,11 +3,13 @@
   <component name="DesignSurface">
     <option name="filePathToZoomLevelMap">
       <map>
+        <entry key="..\:/Projects/remainderApp/app/src/main/res/drawable/quote.xml" value="0.22135416666666666" />
         <entry key="..\:/Projects/remainderApp/app/src/main/res/layout/activity_main.xml" value="0.18020833333333333" />
         <entry key="..\:/Projects/remainderApp/app/src/main/res/layout/add_book.xml" value="0.18020833333333333" />
         <entry key="..\:/Projects/remainderApp/app/src/main/res/layout/add_quote.xml" value="0.20520833333333333" />
         <entry key="..\:/Projects/remainderApp/app/src/main/res/layout/collasped_notification.xml" value="0.18020833333333333" />
         <entry key="..\:/Projects/remainderApp/app/src/main/res/layout/remaider_task.xml" value="0.5" />
+        <entry key="..\:/Projects/remainderApp/app/src/main/res/menu/first_menu.xml" value="0.14166666666666666" />
       </map>
     </option>
   </component>
