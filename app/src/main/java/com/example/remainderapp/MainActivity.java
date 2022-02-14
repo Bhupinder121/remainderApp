@@ -39,6 +39,9 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.Calendar;
 
+import static com.example.remainderapp.loadingScreen.tasks;
+import static com.example.remainderapp.loadingScreen.todayTasks;
+
 public class MainActivity extends AppCompatActivity {
     ScreenOnOffManager screenOnOffManager;
     Intent service;
@@ -52,8 +55,8 @@ public class MainActivity extends AppCompatActivity {
     private static AlertDialog dialog;
     private SwipeRefreshLayout swipeRefreshLayout;
     private static AlertDialog.Builder dialogBuilder;
-    ArrayList<JSONObject> tasks;
-    int todayTasks;
+
+
     EditText editText;
 
     @Override
@@ -77,12 +80,8 @@ public class MainActivity extends AppCompatActivity {
         connection = new serverConnection();
         connection.setup();
 
-        getData(MainActivity.this, (value, TodayTasks) -> {
-            tasks = value;
-            todayTasks = TodayTasks;
-            adapter = new customAdapter(MainActivity.this, R.layout.remaider_task, tasks, todayTasks);
-            listView.setAdapter(adapter);
-        });
+        adapter = new customAdapter(MainActivity.this, R.layout.remaider_task, tasks, todayTasks);
+        listView.setAdapter(adapter);
 
         if(!isMyServiceRunning(screenOnOffManager.getClass())){
             startService(service);

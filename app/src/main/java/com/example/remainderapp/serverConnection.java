@@ -27,7 +27,8 @@ import retrofit2.converter.gson.GsonConverterFactory;
 public class serverConnection {
     RetrofitInterface retrofitInterface;
     Retrofit retrofit;
-    String baseUrl = "http://192.168.0.118:3000";
+//    String baseUrl = "http://192.168.0.118:3000";
+    String baseUrl = "https://tesl-server.herokuapp.com";
     
 
     public void setup(){
@@ -43,7 +44,7 @@ public class serverConnection {
         date_category = Encryption_Decryption.encrypt(date_category).replace("+", "t36i")
                 .replace("/", "8h3nk1").replace("=", "d3ink2"); // Add encryption
         RequestQueue queue = Volley.newRequestQueue(context);
-        String url = baseUrl+"/sendData?data_query="+date_category;
+        String url = baseUrl+"/sendData?data_query="+date_category+"&server=remainder";
         StringRequest stringRequest = new StringRequest(Request.Method.GET, url,
                 response -> {
                     String encrypedData = response.replace("t36i", "+").replace("8h3nk1", "/").replace("d3ink2", "=");
@@ -70,6 +71,7 @@ public class serverConnection {
         JSONObject encryptedData = new JSONObject();
         try {
             encryptedData.put("json", Encryption_Decryption.encrypt(data.toString()));
+            encryptedData.put("server", "remainder");
         } catch (JSONException e) {
             e.printStackTrace();
         }
