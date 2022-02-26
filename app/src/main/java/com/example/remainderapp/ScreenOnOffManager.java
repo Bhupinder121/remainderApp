@@ -123,6 +123,7 @@ public class ScreenOnOffManager extends Service {
             }
             if(wakeup){
                 sendNoti = false;
+                wakeup = false;
                 wakeUp();
                 showQuote();
             }
