@@ -46,9 +46,9 @@ public class ScreenOnOffManager extends Service {
     final boolean[] toggle = {true};
     boolean oneTime = false;
     private long maxTime = (long) 1.8e+6;
-    private long sleepTime = (long) 30000;
-    private long waitTime = 30000;
-//    private long sleepTime = (long) 2.16e+7;
+//    private long sleepTime = (long) 30000;
+    private long waitTime = 60000;
+    private long sleepTime = (long) 2.16e+7;
     private static serverConnection connection;
 
     @Override
@@ -122,6 +122,7 @@ public class ScreenOnOffManager extends Service {
                 e.printStackTrace();
             }
             if(wakeup){
+                wakeup = false;
                 sendNoti = false;
                 wakeup = false;
                 wakeUp();

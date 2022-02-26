@@ -42,7 +42,7 @@ public class customAdapter extends ArrayAdapter<JSONObject> {
 
         String task_date = "today";
         String taskName = "";
-        SimpleDateFormat format = new SimpleDateFormat("dd/MM/yyyy, HH:mm:ss a");
+        SimpleDateFormat format = new SimpleDateFormat("MM/dd/yyyy, HH:mm:ss a");
 
         TextView task = convertView.findViewById(R.id.task);
         Button doneButton = convertView.findViewById(R.id.done);
