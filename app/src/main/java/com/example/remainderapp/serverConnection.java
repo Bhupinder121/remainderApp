@@ -27,8 +27,8 @@ import retrofit2.converter.gson.GsonConverterFactory;
 public class serverConnection {
     RetrofitInterface retrofitInterface;
     Retrofit retrofit;
-//    String baseUrl = "http://192.168.0.118:3000";
-    String baseUrl = "https://tesl-server.herokuapp.com";
+    String baseUrl = "http://103.68.22.220:3000";
+//    String baseUrl = "https://tesl-server.herokuapp.com";
     
 
     public void setup(){

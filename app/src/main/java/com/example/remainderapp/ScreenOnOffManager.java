@@ -45,9 +45,9 @@ public class ScreenOnOffManager extends Service {
     public static boolean isCall = false;
     final boolean[] toggle = {true};
     boolean oneTime = false;
-    private long maxTime = (long) 1.8e+6;
-//    private long sleepTime = (long) 30000;
-    private long waitTime = 60000;
+//    private long maxTime = (long) 1.8e+6;
+    private long maxTime = (long) 30 * 60 * 1000;
+    private long waitTime = 30000;
     private long sleepTime = (long) 2.16e+7;
     private static serverConnection connection;
 
@@ -116,6 +116,7 @@ public class ScreenOnOffManager extends Service {
         }
         if(screenState() != previousState && toggle[0]){// Add test Call receiver
             previousState = screenState();
+            System.out.println(previousState);
             try {
                 stateChanged = df.parse(source);
             } catch (ParseException e) {
@@ -138,6 +139,7 @@ public class ScreenOnOffManager extends Service {
         }
         else{
             long timedifference = currentTime.getTime()-stateChanged.getTime();
+            System.out.println(timedifference);
             if(!isCall){
                 if(timedifference >= sleepTime){
                     if(!screenState()){
@@ -152,7 +154,10 @@ public class ScreenOnOffManager extends Service {
                         System.out.println("On Notification");
                     }
                     else {
-                        sendNoti = true;
+                        stateChanged = currentTime;
+                        showData();
+                        System.out.println("off Notification");
+//                        sendNoti = true;
                     }
                 }
             }
@@ -175,8 +180,10 @@ public class ScreenOnOffManager extends Service {
             List<String> tasks = new ArrayList<>();
             int count = 0;
             for (JSONObject obj : value) {
-                count++;
-                tasks.add(obj.getString("taskName"));
+                if(obj.getInt("isDone") == 0) {
+                    count++;
+                    tasks.add(obj.getString("taskName"));
+                }
             }
             if (count > 0){
                 String taskNames = countFrequencies(tasks);
@@ -194,7 +201,7 @@ public class ScreenOnOffManager extends Service {
         collaspedView.setTextViewText(R.id.remainingTask, remainingTask);
 
         Intent resIntent = new Intent(this, MainActivity.class);
-        PendingIntent PenIntent = PendingIntent.getActivity(this, 1, resIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+        PendingIntent PenIntent = PendingIntent.getActivity(this, 3, resIntent, PendingIntent.FLAG_IMMUTABLE);
         Notification notification = new NotificationCompat.Builder(this, "WakeUP")
 //                .setContentTitle(title)
 //                .setContentText(task)
@@ -240,7 +247,7 @@ public class ScreenOnOffManager extends Service {
 
     private void wakeUp() {
         Intent resIntent = new Intent(this, MainActivity.class);
-        PendingIntent PenIntent = PendingIntent.getActivity(this, 1, resIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+        PendingIntent PenIntent = PendingIntent.getActivity(this, 1, resIntent, PendingIntent.FLAG_IMMUTABLE);
         Notification notification = new NotificationCompat.Builder(this, "WakeUP")
                 .setContentTitle("WAKE UP")
                 .setContentText("The task is Make Bed")
@@ -275,11 +282,14 @@ public class ScreenOnOffManager extends Service {
         timer = new Timer();
         timerTask = new TimerTask() {
             public void run() {
+//                wakeUp
                 try {
                     timeManager();
                 } catch (ParseException e) {
                     e.printStackTrace();
                 }
+
+
             }
         };
         timer.schedule(timerTask, 1000, 1000); //
