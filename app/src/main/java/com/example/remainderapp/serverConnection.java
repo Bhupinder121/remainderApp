@@ -17,7 +17,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
-import java.util.TimerTask;
+import android.widget.Toast;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -55,6 +55,7 @@ public class serverConnection {
                         for (int i = 0; i < jsonArray.length(); i++) {
                             objects.add(jsonArray.getJSONObject(i));
                         }
+
                     } catch (JSONException e) {
                         e.printStackTrace();
                     }
@@ -63,7 +64,7 @@ public class serverConnection {
                     } catch (JSONException e) {
                         e.printStackTrace();
                     }
-                }, error -> System.out.println("onErrorResponse: "+error));
+                }, error -> Toast.makeText(context.getApplicationContext(), error.toString(), Toast.LENGTH_LONG));
         queue.add(stringRequest);
     }
 

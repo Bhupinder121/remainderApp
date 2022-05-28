@@ -185,6 +185,7 @@ public class MainActivity extends AppCompatActivity {
     public static void getData(Context context, customCallback callback){
         connection.getData("SELECT * From task_table", context, (todayvalue, todaySize) -> connection.getData("SELECT * FROM notdonetask_table", context, (notDonevalue, notDoneSize) -> {
             todayvalue.addAll(notDonevalue);
+
             callback.Data(todayvalue, todaySize);
         }));
     }

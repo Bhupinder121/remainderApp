@@ -3,6 +3,7 @@ package com.example.remainderapp;
 import android.Manifest;
 import android.content.Context;
 import android.graphics.Paint;
+import android.os.Build;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -13,12 +14,15 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.RequiresApi;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -35,6 +39,7 @@ public class customAdapter extends ArrayAdapter<JSONObject> {
         this.todayTasks = todayTasks;
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.O)
     @NonNull
     @Override
     public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
@@ -62,9 +67,14 @@ public class customAdapter extends ArrayAdapter<JSONObject> {
             Date taskDate = format.parse(tasks.get(position).getString("taskAddDate"));
             Date currentTaskDate = format.parse(tasks.get(0).getString("taskAddDate"));
 
-            if (taskDate.getDate() == currentTaskDate.getDate() + 1 && taskDate.getMonth() == currentTaskDate.getMonth()) {
+            DateTimeFormatter dtf = DateTimeFormatter.ofPattern("MM/dd/yyyy, HH:mm:ss a");
+            LocalDateTime now = LocalDateTime.now();
+            Date currentDate = format.parse(dtf.format(now));
+
+
+            if (taskDate.getDate() == currentDate.getDate() + 1 && taskDate.getMonth() == currentDate.getMonth()) {
                 task_date = "tomorrow";
-            } else if (taskDate.getDate() != currentTaskDate.getDate() || taskDate.getMonth() != currentTaskDate.getMonth()) {
+            } else if (taskDate.getDate() != currentDate.getDate() || taskDate.getMonth() != currentDate.getMonth()) {
                 task_date = taskDate.getDate() + " " + monthName[taskDate.getMonth()];
             }
 

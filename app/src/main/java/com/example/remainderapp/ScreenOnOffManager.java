@@ -139,7 +139,6 @@ public class ScreenOnOffManager extends Service {
         }
         else{
             long timedifference = currentTime.getTime()-stateChanged.getTime();
-            System.out.println(timedifference);
             if(!isCall){
                 if(timedifference >= sleepTime){
                     if(!screenState()){
