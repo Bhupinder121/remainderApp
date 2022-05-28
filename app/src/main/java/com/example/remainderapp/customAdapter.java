@@ -1,6 +1,5 @@
 package com.example.remainderapp;
 
-import android.Manifest;
 import android.content.Context;
 import android.graphics.Paint;
 import android.os.Build;
@@ -10,7 +9,6 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;

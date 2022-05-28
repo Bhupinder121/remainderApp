@@ -96,7 +96,7 @@ public class MainActivity extends AppCompatActivity {
                 obj.put("date", source);
                 connection.sendData(obj);
                 obj.put("taskName", todo);
-                obj.put("taskAddDate", dayOfMonth+"/"+(month+1)+"/"+year+", 12:00:00 am");
+                obj.put("taskAddDate", (month+1)+"/"+dayOfMonth+"/"+year+", 12:00:00 am");
                 obj.put("isDone", 0);
                 obj.put("isNotDone", 0);
                 obj.put("taskID", todayTasks+1);
