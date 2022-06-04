@@ -63,6 +63,25 @@
         app:layout_constraintTop_toTopOf="parent" />
 
 
+    <com.google.android.material.slider.Slider
+        android:id="@+id/noti_time_selector"
+        android:layout_width="0dp"
+        android:layout_height="48dp"
+        android:layout_marginTop="16dp"
+        android:stepSize="1"
+        android:value="20"
+        android:valueFrom="5"
+        android:valueTo="30"
+        app:layout_constraintBottom_toTopOf="@+id/textView2"
+        app:layout_constraintEnd_toStartOf="@+id/clear"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/editTask"
+        app:layout_constraintVertical_bias="1.0"
+        app:thumbColor="@color/cyan"
+        app:tickColorActive="@color/white"
+        app:tickVisible="true"
+        app:trackColor="@color/white" />
+
     <TextView
         android:id="@+id/textView2"
         android:layout_width="wrap_content"
@@ -98,16 +117,17 @@
         app:layout_constraintEnd_toStartOf="@+id/textView3"
         app:layout_constraintTop_toBottomOf="@+id/clear" />
 
-    <Button
+
+    <TextView
         android:id="@+id/clear"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="80dp"
+        android:layout_marginTop="13dp"
         android:backgroundTint="@color/cyan"
-        android:text="Clear list"
+        android:text="Notification Time"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-
+        app:layout_constraintStart_toEndOf="@+id/noti_time_selector"
+        app:layout_constraintTop_toTopOf="@+id/noti_time_selector" />
 
     <EditText
         android:id="@+id/editTask"
@@ -124,15 +144,14 @@
         app:layout_constraintTop_toTopOf="parent" />
 
 
-
-<!--    <nl.dionsegijn.konfetti.KonfettiView-->
-<!--        android:id="@+id/konfettiView"-->
-<!--        android:layout_width="0dp"-->
-<!--        android:layout_height="0dp"-->
-<!--        app:layout_constraintBottom_toBottomOf="parent"-->
-<!--        app:layout_constraintEnd_toEndOf="parent"-->
-<!--        app:layout_constraintStart_toStartOf="parent"-->
-<!--        app:layout_constraintTop_toTopOf="parent" />-->
+    <!--    <nl.dionsegijn.konfetti.KonfettiView-->
+    <!--        android:id="@+id/konfettiView"-->
+    <!--        android:layout_width="0dp"-->
+    <!--        android:layout_height="0dp"-->
+    <!--        app:layout_constraintBottom_toBottomOf="parent"-->
+    <!--        app:layout_constraintEnd_toEndOf="parent"-->
+    <!--        app:layout_constraintStart_toStartOf="parent"-->
+    <!--        app:layout_constraintTop_toTopOf="parent" />-->
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>

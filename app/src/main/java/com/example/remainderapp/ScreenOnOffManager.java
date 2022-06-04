@@ -1,6 +1,8 @@
 package com.example.remainderapp;
 
 
+import static com.example.remainderapp.MainActivity.maxTime;
+
 import android.annotation.SuppressLint;
 import android.app.Notification;
 import android.app.NotificationChannel;
@@ -9,6 +11,7 @@ import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.media.AudioManager;
 import android.os.Build;
@@ -44,9 +47,9 @@ public class ScreenOnOffManager extends Service {
     private boolean sendNoti = false, wakeup = false;
     public static boolean isCall = false;
     final boolean[] toggle = {true};
+
     boolean oneTime = false;
-//    private long maxTime = (long) 1.8e+6;
-    private long maxTime = (long) 30 * 60 * 1000;
+    private long max_service_time = (long) 60 * 1000 * 15;
     private long waitTime = 30000;
     private long sleepTime = (long) 2.16e+7;
     private static serverConnection connection;
@@ -57,6 +60,11 @@ public class ScreenOnOffManager extends Service {
         createNotificationChannel();
         connection = new serverConnection();
         connection.setup();
+
+        SharedPreferences sharedPreferences = getSharedPreferences(MainActivity.SharedName, MODE_PRIVATE);
+        float storedTime = sharedPreferences.getFloat("notiTime", 15);
+        maxTime = 60 * 1000 * (long) storedTime;
+
 
         if (Build.VERSION.SDK_INT > Build.VERSION_CODES.O){
             startMyOwnForeground();
@@ -77,6 +85,7 @@ public class ScreenOnOffManager extends Service {
         return super.onStartCommand(intent, flags, startId);
     }
 
+
     @Override
     public void onDestroy() {
         super.onDestroy();
@@ -89,6 +98,10 @@ public class ScreenOnOffManager extends Service {
     }
 
     private String timeManager() throws ParseException {
+//        if(maxTime != 0){
+//            max_service_time = maxTime;
+//        }
+//        System.out.println(max_service_time/60000);
         String notification = "";
         java.text.DateFormat df = new java.text.SimpleDateFormat("hh:mm:ss");
         int hou = Calendar.getInstance().getTime().getHours();
@@ -145,7 +158,7 @@ public class ScreenOnOffManager extends Service {
                         wakeup = true;
                     }
                 }
-                else if(timedifference >= maxTime){
+                else if(timedifference >= max_service_time){
                     if(screenState() && toggle[0]){
                         showData();
                         // send notification
@@ -208,7 +221,9 @@ public class ScreenOnOffManager extends Service {
                 .setAutoCancel(true)
                 .setPriority(NotificationCompat.PRIORITY_MAX)
                 .setDefaults(Notification.DEFAULT_ALL)
-                .setCustomContentView(collaspedView)
+                .setContentTitle(remainingTask)
+                .setContentText(task)
+//                .setCustomContentView(collaspedView)
                 .setCustomBigContentView(expanedView)
                 .setStyle(new NotificationCompat.BigTextStyle())
                 .setStyle(new NotificationCompat.DecoratedCustomViewStyle())

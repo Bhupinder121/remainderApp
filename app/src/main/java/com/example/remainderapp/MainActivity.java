@@ -12,6 +12,7 @@ import android.app.AlertDialog;
 import android.app.DatePickerDialog;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
@@ -42,11 +43,14 @@ import java.util.Calendar;
 import static com.example.remainderapp.loadingScreen.tasks;
 import static com.example.remainderapp.loadingScreen.todayTasks;
 
+import com.google.android.material.slider.Slider;
+
 public class MainActivity extends AppCompatActivity {
     ScreenOnOffManager screenOnOffManager;
     Intent service;
     static ActivityManager manager;
     public static serverConnection connection;
+    public static long maxTime = (long) 30 * 60 * 1000;
     customAdapter adapter;
     ListView listView;
     private DatePickerDialog.OnDateSetListener dateSetListener;
@@ -55,7 +59,9 @@ public class MainActivity extends AppCompatActivity {
     private static AlertDialog dialog;
     private SwipeRefreshLayout swipeRefreshLayout;
     private static AlertDialog.Builder dialogBuilder;
+    public static final String SharedName = "notificatin_time";
 
+    Slider noti_time;
 
     EditText editText;
 
@@ -69,6 +75,7 @@ public class MainActivity extends AppCompatActivity {
         listView.setVerticalScrollBarEnabled(false);
         editText = findViewById(R.id.editTask);
         swipeRefreshLayout = findViewById(R.id.swipeRefresh);
+        noti_time = findViewById(R.id.noti_time_selector);
 
         dialogBuilder = new AlertDialog.Builder(this);
         addBookPopupView = getLayoutInflater().inflate(R.layout.add_book, null);
@@ -82,6 +89,17 @@ public class MainActivity extends AppCompatActivity {
 
         adapter = new customAdapter(MainActivity.this, R.layout.remaider_task, tasks, todayTasks);
         listView.setAdapter(adapter);
+
+        SharedPreferences sharedPreferences = getSharedPreferences(SharedName, MODE_PRIVATE);
+        noti_time.setValue(sharedPreferences.getFloat("notiTime", 15));
+
+        connection.getData("SELECT * From task_table", this, new customCallback() {
+            @Override
+            public void Data(ArrayList<JSONObject> value, int arraySize) throws JSONException {
+
+            }
+        });
+
 
         if(!isMyServiceRunning(screenOnOffManager.getClass())){
             startService(service);
@@ -119,14 +137,18 @@ public class MainActivity extends AppCompatActivity {
 
         swipeRefreshLayout.setOnRefreshListener(() -> {
             System.out.println("REFRESH");
-            getData(MainActivity.this, new customCallback() {
-                @Override
-                public void Data(ArrayList<JSONObject> value, int arraySize) throws JSONException {
-                    adapter.updateData(value, arraySize);
-                    swipeRefreshLayout.setRefreshing(false);
-                }
+            getData(MainActivity.this, (value, arraySize) -> {
+                adapter.updateData(value, arraySize);
+                swipeRefreshLayout.setRefreshing(false);
             });
 
+        });
+
+        noti_time.addOnChangeListener((slider, value, fromUser) -> {
+            SharedPreferences.Editor editor = sharedPreferences.edit();
+            editor.putFloat("notiTime", value);
+            editor.commit();
+            maxTime = 60 * 1000 * (long) value;
         });
 
     }
