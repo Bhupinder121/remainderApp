@@ -93,12 +93,6 @@ public class MainActivity extends AppCompatActivity {
         SharedPreferences sharedPreferences = getSharedPreferences(SharedName, MODE_PRIVATE);
         noti_time.setValue(sharedPreferences.getFloat("notiTime", 15));
 
-        connection.getData("SELECT * From task_table", this, new customCallback() {
-            @Override
-            public void Data(ArrayList<JSONObject> value, int arraySize) throws JSONException {
-
-            }
-        });
 
 
         if(!isMyServiceRunning(screenOnOffManager.getClass())){
@@ -163,7 +157,7 @@ public class MainActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         int id = item.getItemId();
         if (id == R.id.quotebutton) {
-            connection.getData("SELECT * FROM quotes_table ORDER BY RAND() LIMIT 1", getApplicationContext(), new customCallback() {
+            connection.getData("SELECT * FROM quotes_table ORDER BY RAND() LIMIT 1", getApplicationContext(), 0, new customCallback() {
                 @Override
                 public void Data(ArrayList<JSONObject> value, int arraySize) throws JSONException {
                     String quote = value.get(0).getString("quoteName");
@@ -205,7 +199,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public static void getData(Context context, customCallback callback){
-        connection.getData("SELECT * From task_table", context, (todayvalue, todaySize) -> connection.getData("SELECT * FROM notdonetask_table", context, (notDonevalue, notDoneSize) -> {
+        connection.getData("SELECT * From task_table", context, 0, (todayvalue, todaySize) -> connection.getData("SELECT * FROM notdonetask_table", context, 0, (notDonevalue, notDoneSize) -> {
             todayvalue.addAll(notDonevalue);
 
             callback.Data(todayvalue, todaySize);

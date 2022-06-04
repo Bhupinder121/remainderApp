@@ -23,7 +23,7 @@ public class loadingScreen extends AppCompatActivity {
         getSupportActionBar().hide();
         connection = new serverConnection();
         connection.setup();
-        getData(loadingScreen.this, (value, TodayTasks) -> {
+        getData(getApplicationContext(), (value, TodayTasks) -> {
             tasks = value;
             todayTasks = TodayTasks;
             startActivity(new Intent(loadingScreen.this, MainActivity.class));
@@ -31,7 +31,7 @@ public class loadingScreen extends AppCompatActivity {
         });
     }
     public void getData(Context context, customCallback callback){
-        connection.getData("SELECT * From task_table", context, (todayvalue, todaySize) -> connection.getData("SELECT * FROM notdonetask_table", context, (notDonevalue, notDoneSize) -> {
+        connection.getData("SELECT * From task_table", context, 0, (todayvalue, todaySize) -> connection.getData("SELECT * FROM notdonetask_table", context, 0, (notDonevalue, notDoneSize) -> {
             todayvalue.addAll(notDonevalue);
             System.out.println(todayvalue);
             callback.Data(todayvalue, todaySize);

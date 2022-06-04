@@ -40,8 +40,8 @@ public class serverConnection {
         retrofitInterface = retrofit.create(RetrofitInterface.class);
     }
 
-    public void getData(String date_category, Context context, com.example.remainderapp.customCallback callback){
-        date_category = Encryption_Decryption.encrypt(date_category).replace("+", "t36i")
+    public void getData(String data, Context context, int id, com.example.remainderapp.customCallback callback){
+        String  date_category = Encryption_Decryption.encrypt(data).replace("+", "t36i")
                 .replace("/", "8h3nk1").replace("=", "d3ink2"); // Add encryption
 
         Call<String> call = retrofitInterface.getData(date_category, "remainder");
@@ -58,7 +58,15 @@ public class serverConnection {
 
             @Override
             public void onFailure(Call<String> call, Throwable t) {
-                Log.e("error", t.getMessage());
+                System.out.println("error");
+                if(id < 6) {
+                    getData(data, context,id + 1, (value, arraySize) -> callback.Data(value, arraySize));
+//
+                }
+                else {
+                    System.out.println(t.getMessage());
+                    Toast.makeText(context, t.getMessage(), Toast.LENGTH_LONG).show();
+                }
             }
         });
 

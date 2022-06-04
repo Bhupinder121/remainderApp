@@ -178,7 +178,7 @@ public class ScreenOnOffManager extends Service {
     }
 
     private void showQuote(){
-        connection.getData("SELECT * FROM quotes_table ORDER BY RAND() LIMIT 1", getApplicationContext(), new customCallback() {
+        connection.getData("SELECT * FROM quotes_table ORDER BY RAND() LIMIT 1", ScreenOnOffManager.this,0, new customCallback() {
             @Override
             public void Data(ArrayList<JSONObject> value, int arraySize) throws JSONException {
                 String quote = value.get(0).getString("quoteName");
@@ -188,7 +188,7 @@ public class ScreenOnOffManager extends Service {
     }
 
     private void showData(){
-        getData(getApplicationContext(), (value, arraySize) -> {
+        getData((value, arraySize) -> {
             List<String> tasks = new ArrayList<>();
             int count = 0;
             for (JSONObject obj : value) {
@@ -252,8 +252,8 @@ public class ScreenOnOffManager extends Service {
         }
     }
 
-    private void getData(Context context, customCallback callback){
-        connection.getData("SELECT * From task_table", context, (todayvalue, todaySize) -> connection.getData("SELECT * FROM notdonetask_table", context, (notDonevalue, notDoneSize) -> {
+    private void getData(customCallback callback){
+        connection.getData("SELECT * From task_table", getApplicationContext(),0, (todayvalue, todaySize) -> connection.getData("SELECT * FROM notdonetask_table", getApplicationContext(),0, (notDonevalue, notDoneSize) -> {
             todayvalue.addAll(notDonevalue);
             callback.Data(todayvalue, todaySize);
         }));
