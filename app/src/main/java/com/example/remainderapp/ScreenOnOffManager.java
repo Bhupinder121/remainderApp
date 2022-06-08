@@ -98,7 +98,7 @@ public class ScreenOnOffManager extends Service {
     private String timeManager() throws ParseException {
         float storedTime = sharedPreferences.getFloat("notiTime", 15);
         max_service_time = (long) 60 * 1000 * (long) storedTime;
-        System.out.println(max_service_time/60000);
+//        System.out.println(max_service_time/60000);
         String notification = "";
         java.text.DateFormat df = new java.text.SimpleDateFormat("hh:mm:ss");
         int hou = Calendar.getInstance().getTime().getHours();
