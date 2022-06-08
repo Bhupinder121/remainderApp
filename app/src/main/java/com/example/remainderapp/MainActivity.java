@@ -30,8 +30,6 @@ import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.ListAdapter;
 import android.widget.ListView;
-import android.widget.TextView;
-import android.widget.Toast;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -42,6 +40,7 @@ import java.util.Calendar;
 
 import static com.example.remainderapp.loadingScreen.tasks;
 import static com.example.remainderapp.loadingScreen.todayTasks;
+import static com.example.remainderapp.loadingScreen.getData;
 
 import com.google.android.material.slider.Slider;
 
@@ -50,7 +49,6 @@ public class MainActivity extends AppCompatActivity {
     Intent service;
     static ActivityManager manager;
     public static serverConnection connection;
-    public static long maxTime = (long) 30 * 60 * 1000;
     customAdapter adapter;
     ListView listView;
     private DatePickerDialog.OnDateSetListener dateSetListener;
@@ -131,10 +129,19 @@ public class MainActivity extends AppCompatActivity {
 
         swipeRefreshLayout.setOnRefreshListener(() -> {
             System.out.println("REFRESH");
-            getData(MainActivity.this, (value, arraySize) -> {
-                adapter.updateData(value, arraySize);
-                swipeRefreshLayout.setRefreshing(false);
+            getData(MainActivity.this, new customCallback() {
+                @Override
+                public void Data(ArrayList<JSONObject> value, int arraySize) throws JSONException {
+                    adapter.updateData(value, arraySize);
+                    swipeRefreshLayout.setRefreshing(false);
+                }
+
+                @Override
+                public void onError(String error) {
+                    System.out.println(error);
+                }
             });
+
 
         });
 
@@ -142,7 +149,6 @@ public class MainActivity extends AppCompatActivity {
             SharedPreferences.Editor editor = sharedPreferences.edit();
             editor.putFloat("notiTime", value);
             editor.commit();
-            maxTime = 60 * 1000 * (long) value;
         });
 
     }
@@ -162,6 +168,11 @@ public class MainActivity extends AppCompatActivity {
                 public void Data(ArrayList<JSONObject> value, int arraySize) throws JSONException {
                     String quote = value.get(0).getString("quoteName");
                     ScreenOnOffManager.sendNotification(MainActivity.this, "Quote of the day",quote);
+                }
+
+                @Override
+                public void onError(String error) {
+                    System.out.println(error);
                 }
             });
         }
@@ -196,14 +207,6 @@ public class MainActivity extends AppCompatActivity {
                 currentYear,currentMonth,currentDate);
         dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
         dialog.show();
-    }
-
-    public static void getData(Context context, customCallback callback){
-        connection.getData("SELECT * From task_table", context, 0, (todayvalue, todaySize) -> connection.getData("SELECT * FROM notdonetask_table", context, 0, (notDonevalue, notDoneSize) -> {
-            todayvalue.addAll(notDonevalue);
-
-            callback.Data(todayvalue, todaySize);
-        }));
     }
 
     public static void add_book_dialog() {

@@ -1,8 +1,6 @@
 package com.example.remainderapp;
 
 
-import static com.example.remainderapp.MainActivity.maxTime;
-
 import android.annotation.SuppressLint;
 import android.app.Notification;
 import android.app.NotificationChannel;
@@ -18,8 +16,6 @@ import android.os.Build;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.PowerManager;
-import android.telecom.Call;
-import android.util.Log;
 import android.widget.RemoteViews;
 
 import androidx.annotation.Nullable;
@@ -41,6 +37,8 @@ import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
 
+
+
 public class ScreenOnOffManager extends Service {
     private boolean previousState = false;
     private Date stateChanged = null;
@@ -54,16 +52,16 @@ public class ScreenOnOffManager extends Service {
     private long sleepTime = (long) 2.16e+7;
     private static serverConnection connection;
 
+    SharedPreferences sharedPreferences;
+
     @Override
     public void onCreate() {
         super.onCreate();
         createNotificationChannel();
         connection = new serverConnection();
         connection.setup();
+        sharedPreferences = getSharedPreferences(MainActivity.SharedName, MODE_PRIVATE);
 
-        SharedPreferences sharedPreferences = getSharedPreferences(MainActivity.SharedName, MODE_PRIVATE);
-        float storedTime = sharedPreferences.getFloat("notiTime", 15);
-        maxTime = 60 * 1000 * (long) storedTime;
 
 
         if (Build.VERSION.SDK_INT > Build.VERSION_CODES.O){
@@ -98,10 +96,9 @@ public class ScreenOnOffManager extends Service {
     }
 
     private String timeManager() throws ParseException {
-//        if(maxTime != 0){
-//            max_service_time = maxTime;
-//        }
-//        System.out.println(max_service_time/60000);
+        float storedTime = sharedPreferences.getFloat("notiTime", 15);
+        max_service_time = (long) 60 * 1000 * (long) storedTime;
+        System.out.println(max_service_time/60000);
         String notification = "";
         java.text.DateFormat df = new java.text.SimpleDateFormat("hh:mm:ss");
         int hou = Calendar.getInstance().getTime().getHours();
@@ -135,14 +132,14 @@ public class ScreenOnOffManager extends Service {
             } catch (ParseException e) {
                 e.printStackTrace();
             }
-            if(wakeup){
-                wakeup = false;
-                sendNoti = false;
-                wakeup = false;
-                wakeUp();
-                showQuote();
-            }
-            else if(sendNoti){
+//            if(wakeup){
+//                wakeup = false;
+//                sendNoti = false;
+//                wakeup = false;
+//                wakeUp();
+//                showQuote();
+//            }
+            if(sendNoti){
                 sendNoti = false;
                 stateChanged = currentTime;
                 showData();
@@ -177,6 +174,31 @@ public class ScreenOnOffManager extends Service {
         return notification;
     }
 
+    private void getData(Context context, customCallback callback){
+        connection.getData("SELECT * From task_table", context, 0, new customCallback() {
+            @Override
+            public void Data(ArrayList<JSONObject> todayvalue, int todaySize) throws JSONException {
+                connection.getData("SELECT * FROM notdonetask_table", context, 0, new customCallback() {
+                    @Override
+                    public void Data(ArrayList<JSONObject> notDonevalue, int notDoneSize) throws JSONException {
+                        todayvalue.addAll(notDonevalue);
+                        callback.Data(todayvalue, todaySize);
+                    }
+
+                    @Override
+                    public void onError(String error) {
+                        System.out.println(error);
+                    }
+                });
+            }
+
+            @Override
+            public void onError(String error) {
+                callback.onError(error);
+            }
+        });
+    }
+
     private void showQuote(){
         connection.getData("SELECT * FROM quotes_table ORDER BY RAND() LIMIT 1", ScreenOnOffManager.this,0, new customCallback() {
             @Override
@@ -184,22 +206,35 @@ public class ScreenOnOffManager extends Service {
                 String quote = value.get(0).getString("quoteName");
                 sendNotification(getApplicationContext(),"Quote of the day",quote) ;
             }
+
+            @Override
+            public void onError(String error) {
+                System.out.println(error);
+            }
         });
     }
 
     private void showData(){
-        getData((value, arraySize) -> {
-            List<String> tasks = new ArrayList<>();
-            int count = 0;
-            for (JSONObject obj : value) {
-                if(obj.getInt("isDone") == 0) {
-                    count++;
-                    tasks.add(obj.getString("taskName"));
+        getData(getApplicationContext(), new customCallback() {
+            @Override
+            public void Data(ArrayList<JSONObject> value, int arraySize) throws JSONException {
+                List<String> tasks = new ArrayList<>();
+                int count = 0;
+                for (JSONObject obj : value) {
+                    if(obj.getInt("isDone") == 0) {
+                        count++;
+                        tasks.add(obj.getString("taskName"));
+                    }
+                }
+                if (count > 0){
+                    String taskNames = countFrequencies(tasks);
+                    showTasKs(taskNames, count);
                 }
             }
-            if (count > 0){
-                String taskNames = countFrequencies(tasks);
-                showTasKs(taskNames, count);
+
+            @Override
+            public void onError(String error) {
+                System.out.println(error);
             }
         });
     }
@@ -252,12 +287,12 @@ public class ScreenOnOffManager extends Service {
         }
     }
 
-    private void getData(customCallback callback){
-        connection.getData("SELECT * From task_table", getApplicationContext(),0, (todayvalue, todaySize) -> connection.getData("SELECT * FROM notdonetask_table", getApplicationContext(),0, (notDonevalue, notDoneSize) -> {
-            todayvalue.addAll(notDonevalue);
-            callback.Data(todayvalue, todaySize);
-        }));
-    }
+//    private void getData(customCallback callback){
+//        connection.getData("SELECT * From task_table", getApplicationContext(),0, (todayvalue, todaySize) -> connection.getData("SELECT * FROM notdonetask_table", getApplicationContext(),0, (notDonevalue, notDoneSize) -> {
+//            todayvalue.addAll(notDonevalue);
+//            callback.Data(todayvalue, todaySize);
+//        }));
+//    }
 
     private void wakeUp() {
         Intent resIntent = new Intent(this, MainActivity.class);

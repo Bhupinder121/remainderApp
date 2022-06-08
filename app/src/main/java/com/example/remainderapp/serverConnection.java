@@ -29,7 +29,7 @@ public class serverConnection {
     Retrofit retrofit;
     String baseUrl = "http://103.68.22.220:3000";
 //    String baseUrl = "https://tesl-server.herokuapp.com";
-    
+    int waitfor = 8;
 
     public void setup(){
         Gson gson = new GsonBuilder().setLenient().create();
@@ -59,8 +59,18 @@ public class serverConnection {
             @Override
             public void onFailure(Call<String> call, Throwable t) {
                 System.out.println("error");
-                if(id < 6) {
-                    getData(data, context,id + 1, (value, arraySize) -> callback.Data(value, arraySize));
+                if(id < waitfor) {
+                    getData(data, context, id + 1, new customCallback() {
+                        @Override
+                        public void Data(ArrayList<JSONObject> value, int arraySize) throws JSONException {
+                            callback.Data(value, arraySize);
+                        }
+
+                        @Override
+                        public void onError(String error) {
+                            callback.onError(error);
+                        }
+                    });
 //
                 }
                 else {
